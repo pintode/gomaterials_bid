@@ -1,0 +1,28 @@
+<!-- Create Supplier Modal -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg w-96">
+    <h3 class="text-lg font-semibold mb-4">Create New Supplier</h3>
+    <form (ngSubmit)="createSupplier()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Name</label>
+        <input type="text" [(ngModel)]="newSupplier.name" name="supplierName"
+               placeholder="Supplier Name"
+               class="w-full border border-gray-300 rounded px-3 py-2"
+               [class.border-red-500]="validationErrors.name">
+        <div *ngIf="validationErrors.name" class="text-red-500 text-sm mt-1">
+          {{ validationErrors.name }}
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" 
+                class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Create
+        </button>
+        <button type="button" (click)="cancel()"
+                class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

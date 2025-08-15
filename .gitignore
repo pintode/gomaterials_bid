@@ -1,0 +1,7 @@
+.vscode
+backend/.gradle
+backend/.vscode
+backend/bin/
+backend/build/
+backend/gradlew
+backend/gradlew.bat

@@ -1,0 +1,41 @@
+services:
+  mysql_database:
+    image: mysql:9
+    environment:
+      MYSQL_ROOT_PASSWORD: gomaterials
+      MYSQL_DATABASE: gomaterials
+      MYSQL_USER: gomaterials
+      MYSQL_PASSWORD: gomaterials
+    volumes:
+      - mysql-data-gomaterials:/var/lib/mysql
+    expose:
+      - "3306"
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q ':0CEA ' /proc/1/net/tcp6"] # Check if port 3306 (0x0CEA) is listening
+      interval: 2s
+      timeout: 10s
+      retries: 10
+
+  backend1:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+    depends_on:
+      mysql_database:
+        condition: service_healthy
+
+  frontend1:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend1
+
+volumes:
+  mysql-data-gomaterials:

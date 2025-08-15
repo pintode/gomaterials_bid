@@ -1,0 +1,109 @@
+<div class="p-4">
+  <div *ngIf="selectedSupplier" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center gap-3">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="text-blue-800 font-medium">
+          Signed in as supplier: {{ selectedSupplier.name }}
+          <span *ngIf="isAuthenticating" class="ml-2 text-blue-600">(Signing in...)</span>
+        </span>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2 whitespace-nowrap">
+        <button type="button" (click)="showSupplierSelectionModal = true" [disabled]="isAuthenticating"
+          class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+          Switch Supplier
+        </button>
+        <button type="button" (click)="showCreateSupplier = true" [disabled]="isAuthenticating"
+          class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+          {{ isAuthenticating ? 'Signing in...' : 'Create New' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Bid Section -->
+  <div *ngIf="bidRequest">
+    <h1 class="text-2xl font-bold mb-4">Submit Bid</h1>
+
+    <div *ngIf="bidRequest.status === BidRequestStatus.AWARDED"
+      class="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd"></path>
+        </svg>
+        <h2 class="text-lg font-semibold text-red-800">Bid Request Already Awarded</h2>
+      </div>
+      <p class="text-red-700 mt-2">This bid request has already been awarded and is no longer accepting new bids.</p>
+    </div>
+
+    <div *ngIf="bidRequest.status !== BidRequestStatus.AWARDED" class="bg-blue-50 p-4 rounded-lg mb-6">
+      <h2 class="text-lg font-semibold mb-2">Bid Request Details</h2>
+      <p><strong>Project:</strong> {{ bidRequest.projectName }}</p>
+      <p><strong>Required By:</strong> {{ bidRequest.requiredBy | date:'shortDate' }}</p>
+      <p><strong>Landscaper:</strong> {{ bidRequest.landscaper.name }}</p>
+    </div>
+
+    <form *ngIf="bidRequest.status !== BidRequestStatus.AWARDED" (ngSubmit)="submitBidResponse()" class="space-y-4">
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <h2 class="text-lg font-semibold mb-4">Bid Details</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Total Price</label>
+            <input type="text" [(ngModel)]="formattedTotalPrice" name="totalPrice" placeholder="$0.00"
+              (input)="onTotalPriceInput($event)" (blur)="onTotalPriceBlur($event)" (focus)="onTotalPriceFocus($event)"
+              class="w-full border border-gray-300 rounded px-3 py-2"
+              [class.border-red-500]="validationErrors.totalPrice" />
+            <div *ngIf="validationErrors.totalPrice" class="text-red-500 text-sm mt-1">
+              {{ validationErrors.totalPrice }}
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Estimated Delivery Date</label>
+            <input type="date" [(ngModel)]="bid.estimatedDeliveryDate" name="eta" #dateInput
+              (click)="dateInput.showPicker()" class="w-full border border-gray-300 rounded px-3 py-2 cursor-pointer"
+              [class.border-red-500]="validationErrors.estimatedDeliveryDate" />
+            <div *ngIf="validationErrors.estimatedDeliveryDate" class="text-red-500 text-sm mt-1">
+              {{ validationErrors.estimatedDeliveryDate }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">Notes</label>
+          <textarea [(ngModel)]="bid.notes" name="notes" placeholder="Additional notes..."
+            class="w-full border border-gray-300 rounded px-3 py-2 h-24"
+            [class.border-red-500]="validationErrors.notes"></textarea>
+          <div *ngIf="validationErrors.notes" class="text-red-500 text-sm mt-1">
+            {{ validationErrors.notes }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button type="submit" [disabled]="isSubmitting"
+          class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 whitespace-nowrap disabled:opacity-50">
+          {{ isSubmitting ? 'Submitting...' : 'Submit Bid' }}
+        </button>
+        <button type="button" (click)="goBack()"
+          class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 whitespace-nowrap">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <app-create-supplier-modal [(showModal)]="showCreateSupplier" (supplierCreated)="onSupplierCreated($event)">
+  </app-create-supplier-modal>
+
+  <!-- Supplier Selection Modal -->
+  <app-supplier-selection-dialog [(showModal)]="showSupplierSelectionModal" [suppliers]="suppliers"
+    (supplierSelected)="onSupplierSelectedFromModal($event)" (createSupplierRequested)="onCreateSupplierRequested()"
+    (showModalChange)="onSupplierModalClosed()">
+  </app-supplier-selection-dialog>
+
+</div>

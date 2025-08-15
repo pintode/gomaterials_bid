@@ -1,0 +1,199 @@
+<div class="p-4">
+  <div *ngIf="selectedLandscaper" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center gap-3">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="text-blue-800 font-medium whitespace-nowrap">
+          Signed in as landscaper: {{ selectedLandscaper.name }}
+          <span *ngIf="isAuthenticating" class="ml-2 text-blue-600">(Signing in...)</span>
+        </span>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2 whitespace-nowrap">
+        <button type="button" (click)="showLandscaperSelectionModal = true" [disabled]="isAuthenticating"
+          class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+          Switch Landscaper
+        </button>
+        <button type="button" (click)="showCreateLandscaper = true" [disabled]="isAuthenticating"
+          class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+          {{ isAuthenticating ? 'Signing in...' : 'Create New' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content - Always show -->
+  <div>
+    <h1 class="text-2xl font-bold mb-6">Create Bid Request</h1>
+
+    <form (ngSubmit)="createBidRequest()" class="space-y-6">
+      <!-- Project Details -->
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <h2 class="text-lg font-semibold mb-4">Project Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Project Name</label>
+            <input type="text" [(ngModel)]="bidRequest.projectName" name="projectName"
+              class="w-full border border-gray-300 rounded px-3 py-2"
+              [class.border-red-500]="validationErrors.projectName">
+            <div *ngIf="validationErrors.projectName" class="text-red-500 text-sm mt-1">
+              {{ validationErrors.projectName }}
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Required By</label>
+            <input type="date" [(ngModel)]="bidRequest.requiredBy" name="requiredBy" #dateInput
+              (click)="dateInput.showPicker()" class="w-full border border-gray-300 rounded px-3 py-2"
+              [class.border-red-500]="validationErrors.requiredBy">
+            <div *ngIf="validationErrors.requiredBy" class="text-red-500 text-sm mt-1">
+              {{ validationErrors.requiredBy }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plant Items -->
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <h2 class="text-lg font-semibold mb-4">Plant Items</h2>
+
+        <!-- Plant Items List -->
+        
+        <!-- Mobile Card View -->
+        <div class="block md:hidden space-y-3">
+          <div *ngFor="let item of bidRequest.plantItems; let i = index" class="bg-white border rounded-lg p-4 shadow-sm">
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between">
+                <span class="text-gray-600 text-sm">Name:</span>
+                <span class="font-medium">{{ item.name }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 text-sm">Grade:</span>
+                <span class="font-medium">{{ item.grade }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 text-sm">Quantity:</span>
+                <span class="font-medium">{{ item.quantity }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 text-sm">Unit:</span>
+                <span class="font-medium">{{ item.unit }}</span>
+              </div>
+            </div>
+            <button type="button" (click)="removePlantItem(i)"
+              class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block border rounded-lg overflow-x-auto">
+          <table class="w-full min-w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Grade</th>
+                <th class="px-4 py-2 text-left">Quantity</th>
+                <th class="px-4 py-2 text-left">Unit</th>
+                <th class="px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of bidRequest.plantItems; let i = index" class="border-t">
+                <td class="px-4 py-2">{{ item.name }}</td>
+                <td class="px-4 py-2">{{ item.grade }}</td>
+                <td class="px-4 py-2">{{ item.quantity }}</td>
+                <td class="px-4 py-2">{{ item.unit }}</td>
+                <td class="px-4 py-2">
+                  <button type="button" (click)="removePlantItem(i)"
+                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div *ngIf="validationErrors.plantItems" class="text-red-500 text-sm p-2 bg-red-50 border-t">
+          {{ validationErrors.plantItems }}
+        </div>
+
+        <!-- Add Plant Item Form -->
+        <div class="mt-6 p-4 border rounded-lg bg-gray-50">
+          <h4 class="text-lg font-medium mb-4">Add Plant Item</h4>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Name</label>
+              <input type="text" [(ngModel)]="newPlantItem.name" name="plantName" placeholder="Plant Name"
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                [class.border-red-500]="newPlantItemErrors.name">
+              <div *ngIf="newPlantItemErrors.name" class="text-red-500 text-xs mt-1">
+                {{ newPlantItemErrors.name }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Grade</label>
+              <input type="text" [(ngModel)]="newPlantItem.grade" name="plantGrade" placeholder="Grade"
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                [class.border-red-500]="newPlantItemErrors.grade">
+              <div *ngIf="newPlantItemErrors.grade" class="text-red-500 text-xs mt-1">
+                {{ newPlantItemErrors.grade }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Quantity</label>
+              <input type="number" [(ngModel)]="newPlantItem.quantity" name="plantQuantity" placeholder="Quantity"
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                [class.border-red-500]="newPlantItemErrors.quantity">
+              <div *ngIf="newPlantItemErrors.quantity" class="text-red-500 text-xs mt-1">
+                {{ newPlantItemErrors.quantity }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Unit</label>
+              <select [(ngModel)]="newPlantItem.unit" name="plantUnit" 
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                [class.border-red-500]="newPlantItemErrors.unit">
+                <option value="units">Units</option>
+                <option value="pieces">Pieces</option>
+                <option value="kg">Kilograms</option>
+                <option value="m">Meters</option>
+              </select>
+              <div *ngIf="newPlantItemErrors.unit" class="text-red-500 text-xs mt-1">
+                {{ newPlantItemErrors.unit }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="button" (click)="addPlantItem()"
+              class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
+              Add Plant Item
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end gap-3">
+        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 whitespace-nowrap">
+          Create Bid Request
+        </button>
+        <button type="button" (click)="cancel()" 
+          class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 whitespace-nowrap">
+          Cancel
+        </button>
+      </div>
+    </form>
+
+    <app-create-landscaper-modal [(showModal)]="showCreateLandscaper" (landscaperCreated)="onLandscaperCreated($event)">
+    </app-create-landscaper-modal>
+
+    <!-- Landscaper Selection Modal -->
+    <app-landscaper-selection-dialog [(showModal)]="showLandscaperSelectionModal" [landscapers]="landscapers"
+      (landscaperSelected)="onLandscaperSelectedFromModal($event)"
+      (createLandscaperRequested)="onCreateLandscaperRequested()" (showModalChange)="onLandscaperModalClosed()">
+    </app-landscaper-selection-dialog>
+  </div>
+</div>
