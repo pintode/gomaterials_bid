@@ -42,7 +42,7 @@ This platform demonstrates my ability to rapidly learn new technologies and deli
 
 ## Running Instance
 
-* [Live Prototype](https://gomaterials.danton.pro/)
+* [Live Prototype](https://gomaterials.danton.pro/bid-requests)
 * User-friendly interface allows selecting a user (landscaper/supplier) to execute actions.
 
 ## API Documentation
